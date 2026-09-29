@@ -330,7 +330,104 @@ Token gettoken(void) {
                 #endif
                 pushback(c);
                 return make_token(TOK_NUMBER, lex, start_line);
+
+            case Q8_STRING:
+                if (c == EOF || c == '\n') {
+                    pushback(c);
+                    return make_error("Unterminated String", lex, start_line);
+                }
+                if (c == '"') {
+                    #if STRING_KEEP_QUOTES
+                        append(lex, &len, c);
+                    #endif
+                    return make_token(TOK_STRING, lex, start_line);
+                }
+                append(lex, &len, c);
+                break;
+
+            case Q9_SLASH:
+                if (c == '/') {
+                    st = Q10_COMMENT;
+                    break;
+                }
+                pushback(c);
+                return make_token(TOK_DIVIDE, "/", start_line);
+            
+            case Q10_COMMENT:
+                if (c == EOF) {
+                    st = Q0_START;
+                    pushback(c);
+                    break;
+                }
+            
+            case Q11_STAR:
+                if (c == '*' ) {
+                    return make_token(TOK_RAISE, "**", start_line);
+                }
+                pushback(c);
+                return make_token(TOK_MULTIPLY, "*", start_line);
+            
+            case Q12_COLON:
+                if (c == '=') {
+                    return make_token(TOK_ASSIGN, ":=", start_line);
+                }
+                pushback(c);
+                return make_token(TOK_COLON, ":", start_line);
+
+            case Q13_BANG:
+                if (c == '=') {
+                    return make_token(TOK_NOTEQUAL, "!=", start_line);
+                }
+                pushback(c);
+                return make_error("Invalid ! Character", "!", start_line);
+
+            case Q14_LT:
+                if (c == '=') {
+                    return make_token(TOK_LTEQUAL, "<=", start_line);
+                }
+                pushback(c);
+                return make_token(TOK_LESSTHAN, "<", start_line);
+
+            case Q15_GT:
+                if (c == '=') {
+                    return make_token(TOK_GTEQUAL, ">=", start_line);
+                }
+                pushback(c);
+                return make_token(TOK_GREATERTHAN, ">", start_line);
+
                     
         }
     }
+}
+
+#define SCAN_LINE_FMT "%s %s\n"
+
+int scan_file (const char *path, FILE *out) {
+
+    Token t;
+    int errors;
+
+    if (!scanner_open(path)) {
+        fprintf(out, "Error: could not open %s\n", path);
+        return 1;
+    }
+
+    for (;;) {
+        t = gettoken();
+
+        if (t.type == TOK_ERROR) {
+            fprintf(out, "Lexical Error (line %d): %s [%s]\n", t.line, t.error, t.lexeme);
+        } else if (t.type == TOK_ENDOFFILE) {
+            fprintf(out, "%s\n", token_name(TOK_ENDOFFILE));
+            break;
+        } else {
+            fprintf(out, SCAN_LINE_FMT, token_name(t.type), t.lexeme);
+        }
+    }
+
+    errors = scanner_error_count();
+    scanner_close();
+    (void)at_eof;
+    
+    return errors;
 }
