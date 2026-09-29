@@ -3,6 +3,7 @@
 #include <string.h>
 #include "scanner.h"
 
+#define STRICT_NUMBER_SUFFIX 1
 #define STRING_KEEP_QUOTES 1
 
 #define PB_EMPTY (-2)
@@ -77,7 +78,7 @@ static int is_digit(int c) {
 
 static int is_space(int c) {
 
-    return c == ' ' || c == '\t' || c == '\n' || c =='\v' || c == '\f';
+    return c == ' ' || c == '\t' || c == '\n' || c =='\v' || c == '\f' || c == '\r';
 
 }
 
@@ -181,7 +182,7 @@ Token gettoken(void) {
                 }
                 if (is_digit(c)) {
                     append(lex, &len, c);
-                    st = Q1_ID;
+                    st = Q2_WHOLE;
                     break;
                 }
 
@@ -193,6 +194,7 @@ Token gettoken(void) {
                             append(lex, &len, c);
                         #endif
                         st = Q8_STRING;
+                        break;
 
                     case '/':
                         st = Q9_SLASH;
@@ -204,7 +206,7 @@ Token gettoken(void) {
                         st = Q12_COLON;
                         break;
                     case '!':
-                        st = Q14_LT;
+                        st = Q13_BANG;
                         break;
                     case '<':
                         st = Q14_LT;
@@ -359,6 +361,11 @@ Token gettoken(void) {
                     pushback(c);
                     break;
                 }
+                if (c == '\n') {
+                    st = Q0_START;
+                    break;
+                }
+                break;
             
             case Q11_STAR:
                 if (c == '*' ) {
