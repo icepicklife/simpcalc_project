@@ -1,0 +1,11 @@
+x := 1;
+IF x > 0:
+  IF x > 1:
+    y := 2;
+  ELSE
+    y := 3;
+  ENDIF;
+ELSE
+  y := 4;
+ENDIF;
+PRINT(y);
