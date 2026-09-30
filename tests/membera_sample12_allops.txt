@@ -1,7 +1,0 @@
-a := 1 ** 2 * 3 / 4 + 5 - 6;
-IF a <= 1: PRINT("le"); ENDIF;
-IF a >= 1: PRINT("ge"); ENDIF;
-IF a != 1: PRINT("ne"); ENDIF;
-IF a < 1: PRINT("lt"); ENDIF;
-IF a > 1: PRINT("gt"); ENDIF;
-IF a = 1: PRINT("eq"); ENDIF;

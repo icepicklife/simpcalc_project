@@ -1,2 +1,0 @@
-a := 2;
-PRINT("value is", a + 1, "done");
