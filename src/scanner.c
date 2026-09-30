@@ -3,7 +3,7 @@
 #include <string.h>
 #include "scanner.h"
 
-#define STRICT_NUMBER_SUFFIX 1
+#define STRICT_NUMBER_SUFFIX 0
 #define STRING_KEEP_QUOTES 1
 
 #define PB_EMPTY (-2)
@@ -407,7 +407,7 @@ Token gettoken(void) {
     }
 }
 
-#define SCAN_LINE_FMT "%s %s\n"
+#define SCAN_LINE_FMT "%-31s%s\n"
 
 int scan_file (const char *path, FILE *out) {
 
@@ -423,9 +423,19 @@ int scan_file (const char *path, FILE *out) {
         t = gettoken();
 
         if (t.type == TOK_ERROR) {
-            fprintf(out, "Lexical Error (line %d): %s [%s]\n", t.line, t.error, t.lexeme);
+            if (strcmp(t.error, "Illegal Sequence") == 0) {
+                fprintf(out, "Lexical Error: Illegal character/character sequence   on line %d\nError  on line %d\n", t.line, t.line);
+            } else if (strcmp(t.error, "Invalid Number") == 0) {
+                fprintf(out, "Lexical Error: Invalid number format   on line %d\nError   on line %d\n", t.line, t.line);
+            } else if (strcmp(t.error, "Unterminated String") == 0) {
+                fprintf(out, "Lexical Error: Unterminated  on line %d\nError   on line %d\n", t.line, t.line);
+            } else if (strcmp(t.error, "Invalid ! Character") == 0) {
+                fprintf(out, "Lexical Error reading character ! on line %d\nError  on line %d\n", t.line, t.line);
+            } else {
+                fprintf(out, "Lexical Error (line %d): %s [%s]\n", t.line, t.error, t.lexeme);
+            }
         } else if (t.type == TOK_ENDOFFILE) {
-            fprintf(out, "%s\n", token_name(TOK_ENDOFFILE));
+            fprintf(out, "%-31s \n", token_name(TOK_ENDOFFILE));
             break;
         } else {
             fprintf(out, SCAN_LINE_FMT, token_name(t.type), t.lexeme);
